@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Iberia & the Pyrenees · Sept 2026</title>
+<meta name="description" content="John & Ira — a Spain, France & Andorra road trip, September 2026. Follow along." />
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+:root{
+  --paper:#F5EFE3; --paper-2:#EFE7D6; --card:#FBF7EE;
+  --ink:#221D16; --ink-soft:#5A5040;
+  --clay:#BE5A36; --clay-deep:#9C4526; --sea:#2E6C70; --olive:#7C7A4B;
+  --line:rgba(34,29,22,.14); --shadow:0 18px 40px -24px rgba(34,29,22,.55);
+  --r:16px; --maxw:1180px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:"Hanken Grotesk",sans-serif;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;position:relative}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+h1,h2,h3,.serif{font-family:"DM Serif Display",serif;font-weight:400;line-height:1.05}
+a{color:inherit}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+.eyebrow{font-size:12px;letter-spacing:.22em;text-transform:uppercase;font-weight:600;color:var(--clay)}
+
+.nav{position:sticky;top:0;z-index:1000;backdrop-filter:blur(10px);background:rgba(245,239,227,.82);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
+.brand{display:flex;align-items:center;gap:10px;font-family:"DM Serif Display",serif;font-size:20px}
+.brand .dot{width:11px;height:11px;border-radius:50%;background:var(--clay);box-shadow:0 0 0 4px rgba(190,90,54,.18)}
+.nav-links{display:flex;gap:24px}
+.nav-links a{font-size:14px;font-weight:500;text-decoration:none;color:var(--ink-soft);transition:color .2s}
+.nav-links a:hover{color:var(--clay)}
+@media(max-width:680px){.nav-links{display:none}}
+
+.hero{position:relative;overflow:hidden;padding:84px 0 72px;border-bottom:1px solid var(--line)}
+.hero-bg{position:absolute;inset:0;z-index:0;opacity:.5;background:radial-gradient(60% 80% at 85% -10%, rgba(190,90,54,.18), transparent 60%),radial-gradient(50% 70% at 0% 110%, rgba(46,108,112,.16), transparent 60%)}
+.hero .wrap{position:relative;z-index:1}
+.hero h1{font-size:clamp(46px,8vw,98px);letter-spacing:-.01em}
+.hero h1 em{font-style:italic;color:var(--clay)}
+.hero .sub{margin-top:18px;max-width:640px;font-size:clamp(17px,2.2vw,20px);color:var(--ink-soft)}
+.hero .dates{margin-top:26px;display:inline-flex;align-items:center;gap:14px;font-weight:600;letter-spacing:.04em}
+.hero .dates .pill{background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:999px;font-size:14px}
+.stats{display:flex;flex-wrap:wrap;gap:34px;margin-top:42px}
+.stat .n{font-family:"DM Serif Display",serif;font-size:38px;line-height:1}
+.stat .l{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-top:6px}
+.reveal{opacity:0;transform:translateY(18px);animation:rise .9s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+
+section{padding:74px 0}
+.sec-head{margin-bottom:32px;max-width:620px}
+.sec-head h2{font-size:clamp(30px,4.4vw,46px);margin-top:8px}
+.sec-head p{color:var(--ink-soft);margin-top:12px}
+
+#map-section{background:var(--paper-2)}
+.map-layout{display:grid;grid-template-columns:1.45fr 1fr;gap:26px;align-items:stretch}
+@media(max-width:900px){.map-layout{grid-template-columns:1fr}}
+#map{height:560px;border-radius:var(--r);box-shadow:var(--shadow);border:1px solid var(--line);z-index:1}
+@media(max-width:900px){#map{height:420px}}
+.stoplist{display:flex;flex-direction:column;gap:10px;max-height:560px;overflow:auto;padding-right:6px}
+@media(max-width:900px){.stoplist{max-height:none}}
+.stop{display:flex;gap:14px;align-items:flex-start;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px 16px;transition:transform .18s,border-color .18s,box-shadow .18s}
+.stop:hover{transform:translateX(3px);border-color:var(--clay)}
+.stop.active{border-color:var(--clay);box-shadow:0 0 0 2px rgba(190,90,54,.25);transform:translateX(3px)}
+.stop .num{flex:none;width:30px;height:30px;border-radius:50%;background:var(--clay);color:#fff;font-family:"DM Serif Display",serif;font-size:15px;display:grid;place-items:center;margin-top:2px}
+.stop .meta h4{font-family:"Hanken Grotesk";font-weight:700;font-size:16px}
+.stop .meta .when{font-size:12.5px;color:var(--clay);font-weight:600;letter-spacing:.03em;margin:1px 0 4px}
+.stop .meta p{font-size:14px;color:var(--ink-soft);line-height:1.45}
+.pin{display:grid;place-items:center;width:30px;height:30px;border-radius:50% 50% 50% 2px;background:var(--clay);color:#fff;font-family:"DM Serif Display",serif;font-size:14px;transform:rotate(45deg);box-shadow:0 6px 14px -4px rgba(0,0,0,.5);border:2px solid var(--paper)}
+.pin span{transform:rotate(-45deg)}
+.pin.is-active{background:var(--sea);transform:rotate(45deg) scale(1.18)}
+.leaflet-popup-content-wrapper{border-radius:12px;font-family:"Hanken Grotesk"}
+.leaflet-popup-content{margin:12px 14px}
+.leaflet-popup-content b{font-family:"DM Serif Display",serif;font-weight:400;font-size:17px}
+
+.days{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+.day-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:24px;position:relative;transition:transform .2s,box-shadow .2s}
+.day-card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.day-card .idx{font-family:"DM Serif Display",serif;font-size:13px;color:var(--clay);letter-spacing:.04em}
+.day-card h3{font-size:27px;margin:6px 0 2px}
+.day-card .when{font-size:13px;font-weight:600;color:var(--ink-soft);letter-spacing:.03em}
+.day-card .nights{display:inline-block;margin-top:10px;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--sea);border:1px solid var(--sea);border-radius:999px;padding:3px 10px}
+.day-card .blurb{margin-top:14px;font-size:15px;color:var(--ink-soft)}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+.tag{font-size:12px;background:var(--paper-2);border:1px solid var(--line);border-radius:7px;padding:4px 9px;color:var(--ink-soft)}
+.tag.surf{color:var(--sea);border-color:rgba(46,108,112,.4)}
+.tag.fest{color:var(--clay-deep);border-color:rgba(190,90,54,.4)}
+.fromroad{display:inline-block;margin-top:16px;font-size:13px;font-weight:600;color:var(--clay);text-decoration:none}
+.fromroad:hover{text-decoration:underline}
+
+/* FROM THE ROAD — journal feed */
+.journal-feed{display:flex;flex-direction:column}
+.entry{padding:32px 0;border-top:1px solid var(--line)}
+.entry:first-child{border-top:0;padding-top:4px}
+.entry-head{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.entry-date{font-family:"DM Serif Display",serif;font-size:16px;color:var(--clay)}
+.entry-stop{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--sea);border:1px solid var(--sea);border-radius:999px;padding:2px 9px}
+.entry h3{font-size:27px;margin:2px 0 8px}
+.entry p{color:var(--ink-soft);max-width:680px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:18px}
+.gallery img{width:100%;height:150px;object-fit:cover;border-radius:11px;border:1px solid var(--line);cursor:zoom-in;transition:transform .2s,box-shadow .2s}
+.gallery img:hover{transform:scale(1.02);box-shadow:var(--shadow)}
+.empty-feed{color:var(--ink-soft);font-style:italic}
+
+/* lightbox */
+.lb{position:fixed;inset:0;z-index:2000;background:rgba(20,16,12,.93);display:none;align-items:center;justify-content:center;padding:5vh 4vw;animation:fade .25s}
+.lb.open{display:flex}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.lb img{max-width:90vw;max-height:80vh;border-radius:10px;box-shadow:0 30px 80px -20px #000}
+.lb-cap{position:absolute;bottom:22px;left:0;right:0;text-align:center;color:#f5efe3;font-size:14px;padding:0 20px}
+.lb-close{position:absolute;top:16px;right:22px;background:none;border:0;color:#f5efe3;font-size:42px;line-height:1;cursor:pointer}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.12);border:0;color:#fff;width:50px;height:50px;border-radius:50%;font-size:28px;cursor:pointer;transition:background .2s}
+.lb-nav:hover{background:rgba(255,255,255,.26)}
+.lb-prev{left:18px}.lb-next{right:18px}
+@media(max-width:680px){.lb-nav{width:40px;height:40px;font-size:22px}}
+
+#eats{background:var(--paper-2)}
+.embed-frame{border-radius:var(--r);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);background:var(--card)}
+.embed-frame iframe{display:block;width:100%;height:560px;border:0}
+@media(max-width:900px){.embed-frame iframe{height:430px}}
+.note{font-size:13.5px;color:var(--ink-soft);margin-top:14px;max-width:680px}
+.note code{background:var(--card);border:1px solid var(--line);padding:1px 6px;border-radius:5px;font-size:12.5px}
+
+footer{border-top:1px solid var(--line);padding:48px 0;text-align:center}
+footer .serif{font-size:30px}
+footer p{color:var(--ink-soft);font-size:14px;margin-top:8px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <div class="brand"><span class="dot"></span> Iberia&nbsp;&rsquo;26</div>
+    <div class="nav-links">
+      <a href="#map-section">The Route</a>
+      <a href="#days">Day by Day</a>
+      <a href="#journal">Journal</a>
+      <a href="#eats">Bars &amp; Eats</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-bg"></div>
+  <div class="wrap">
+    <p class="eyebrow reveal" style="animation-delay:.05s">John &amp; Ira &middot; Road Trip</p>
+    <h1 class="reveal" style="animation-delay:.15s">Spain, France<br>&amp; <em>Andorra</em></h1>
+    <p class="sub reveal" style="animation-delay:.3s">A loop from Madrid up to the Basque surf coast, across to Bordeaux, over the Pyrenees through Andorra, and down the Costa Brava into Barcelona for La Merc&egrave;. Follow along &mdash; we&rsquo;ll be posting notes and photos as we go.</p>
+    <div class="dates reveal" style="animation-delay:.42s"><span class="pill">Sept 4 &ndash; 28, 2026</span></div>
+    <div class="stats reveal" style="animation-delay:.55s">
+      <div class="stat"><div class="n">3</div><div class="l">Countries</div></div>
+      <div class="stat"><div class="n">9</div><div class="l">Stops</div></div>
+      <div class="stat"><div class="n">23</div><div class="l">Nights</div></div>
+      <div class="stat"><div class="n">~1,900<span style="font-size:18px">km</span></div><div class="l">On the road</div></div>
+    </div>
+  </div>
+</header>
+
+<section id="map-section">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">The Route</p>
+      <h2>One big counter-clockwise loop</h2>
+      <p>Tap a stop to fly there. The line is roughly the order we&rsquo;ll drive it.</p>
+    </div>
+    <div class="map-layout">
+      <div id="map"></div>
+      <div class="stoplist" id="stoplist"></div>
+    </div>
+  </div>
+</section>
+
+<section id="days">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Day by Day</p>
+      <h2>The stops</h2>
+      <p>Each place and what it&rsquo;s for &mdash; the stable reference. Live updates live in the journal below.</p>
+    </div>
+    <div class="days" id="days-grid"></div>
+  </div>
+</section>
+
+<section id="journal">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">From the Road</p>
+      <h2>The journal</h2>
+      <p>Notes and photos as the trip unfolds &mdash; newest first.</p>
+    </div>
+    <div class="journal-feed" id="journal-feed"></div>
+  </div>
+</section>
+
+<section id="eats">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Bars &amp; Eats</p>
+      <h2>Our pins, live from Google Maps</h2>
+      <p>The cocktail bars, pintxos spots, and finds we&rsquo;re collecting &mdash; updates automatically whenever we edit the map.</p>
+    </div>
+    <div class="embed-frame">
+      <iframe id="gmap" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+    <p class="note">For friends to see this map: open it in Google &rarr; <b>Share</b> &rarr; <b>&ldquo;Anyone with the link.&rdquo;</b> The map ID lives in <code>TRIP.googleMapId</code>.</p>
+  </div>
+</section>
+
+<footer>
+  <p class="serif">Buen viaje.</p>
+  <p>Made by John &amp; Ira &middot; last updated June 2026</p>
+</footer>
+
+<!-- lightbox -->
+<div class="lb" id="lb" aria-hidden="true">
+  <button class="lb-close" onclick="closeLB()" aria-label="Close">&times;</button>
+  <button class="lb-nav lb-prev" onclick="stepLB(-1)" aria-label="Previous">&lsaquo;</button>
+  <img id="lb-img" src="" alt="" />
+  <button class="lb-nav lb-next" onclick="stepLB(1)" aria-label="Next">&rsaquo;</button>
+  <div class="lb-cap" id="lb-cap"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* ============================================================
+   EDIT YOUR TRIP HERE
+   - stops[]   = the stable reference (route map + day cards)
+   - journal[] = your live feed; newest shows first.
+       Each entry: { date:"YYYY-MM-DD", stop:"Madrid",
+                     title:"...", body:"...",
+                     photos:[{src:"img/x.jpg", caption:"..."}] }
+       `stop` should match a stop name so the card links to it.
+   Later we can swap `journal` to load from Firebase instead.
+   ============================================================ */
+
+// tiny inline placeholder so the gallery + lightbox work before you add real photos
+const ph=(c,l)=>"data:image/svg+xml,"+encodeURIComponent(
+  `<svg xmlns='http://www.w3.org/2000/svg' width='600' height='450'><rect width='100%' height='100%' fill='${c}'/><text x='50%' y='50%' fill='rgba(255,255,255,.9)' font-family='sans-serif' font-size='26' text-anchor='middle' dominant-baseline='middle'>${l}</text></svg>`);
+
+const TRIP = {
+  googleMapId: "1s0lICV5BKCW1hmJbmxqga0HwYeYj9Ig",
+  stops: [
+    { name:"Madrid", when:"Sep 5\u20137", nights:3, lat:40.4168, lng:-3.7038,
+      blurb:"Easing in. The Prado, Plaza Mayor, Retiro, Sunday vermouth in La Latina. Optional day trip to Toledo or Segovia.",
+      tags:["Prado","Tapas","Day trip"] },
+    { name:"Bilbao", when:"Sep 8\u20139", nights:2, lat:43.2630, lng:-2.9350,
+      blurb:"Guggenheim and the best pintxos in the Casco Viejo. We break the drive up at Burgos for its Gothic cathedral.",
+      tags:["Guggenheim","Pintxos"] },
+    { name:"San Sebasti\u00e1n", when:"Sep 10\u201312", nights:3, lat:43.3183, lng:-1.9812,
+      blurb:"The \u2018could we live here?\u2019 stop. Surf at Zurriola, La Concha bay, pintxos crawls through the Parte Vieja.",
+      tags:["surf:Zurriola","La Concha","Pintxos"] },
+    { name:"Biarritz", when:"Sep 13\u201315", nights:3, lat:43.4832, lng:-1.5586,
+      blurb:"French-Basque surf town. C\u00f4te des Basques for mellow days, Hossegor for the heavy stuff, Anglet to scout.",
+      tags:["surf:C\u00f4te des Basques","Hossegor"] },
+    { name:"Bordeaux", when:"Sep 16\u201318", nights:3, lat:44.8378, lng:-0.5792,
+      blurb:"The Dune du Pilat and Cap Ferret oysters on the way up. Then Place de la Bourse, the old town, a St-\u00c9milion tasting.",
+      tags:["Dune du Pilat","Wine","St-\u00c9milion"] },
+    { name:"Toulouse", when:"Sep 19", nights:1, lat:43.6045, lng:1.4440,
+      blurb:"One night in the pink-brick city \u2014 dinner and a wander along the Garonne before the mountains.",
+      tags:["Drive-break"] },
+    { name:"Andorra", when:"Sep 20\u201322", nights:3, lat:42.5063, lng:1.5218,
+      blurb:"Into the Pyrenees over Port d\u2019Envalira. XC trails, the Tristaina lakes, Coll de la Gallina drives, the Madriu valley walk.",
+      tags:["MTB / XC","Hiking","Mountain drives"] },
+    { name:"Girona", when:"Sep 23\u201324", nights:2, lat:41.9833, lng:2.8247,
+      blurb:"Medieval old town as a base for the Costa Brava: Cadaqu\u00e9s, Cap de Creus and Dal\u00ed\u2019s house north; coves and the corniche south.",
+      tags:["Costa Brava","Dal\u00ed","Coves"] },
+    { name:"Barcelona", when:"Sep 25\u201327", nights:3, lat:41.3874, lng:2.1686,
+      blurb:"Gaud\u00ed by day and the finale of La Merc\u00e8 by night \u2014 the correfoc fire run, the gegants parade, the Piromusical.",
+      tags:["Gaud\u00ed","fest:La Merc\u00e8","fest:Correfoc"] },
+  ],
+  journal: [
+    // \u2193 SAMPLE ENTRY \u2014 delete me and add your own
+    { date:"2026-06-02", stop:"Madrid", title:"This is a sample entry",
+      body:"Replace this with a real post. Drop your phone photos into an /img folder and list them in photos[], or paste image links. Newest entries appear at the top, and the matching stop card gets a \u201cfrom the road\u201d link.",
+      photos:[
+        {src:ph("#BE5A36","Add a photo"), caption:"Captions show here in the lightbox"},
+        {src:ph("#2E6C70","Tap to enlarge"), caption:""},
+        {src:ph("#7C7A4B","img/your-photo.jpg"), caption:""}
+      ] },
+  ]
+};
+
+/* ============= render (no need to edit) ============= */
+const stoplist=document.getElementById('stoplist');
+const daysGrid=document.getElementById('days-grid');
+const markers=[]; let map, activeIdx=-1;
+
+document.getElementById('gmap').src="https://www.google.com/maps/d/embed?mid="+TRIP.googleMapId;
+
+const tagHTML=t=> t.startsWith('surf:')?`<span class="tag surf">\ud83c\udf0a ${t.slice(5)}</span>`
+  : t.startsWith('fest:')?`<span class="tag fest">\u2728 ${t.slice(5)}</span>`
+  : `<span class="tag">${t}</span>`;
+
+map=L.map('map',{scrollWheelZoom:false}).setView([43,1],6);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:'abcd',maxZoom:19}).addTo(map);
+const line=TRIP.stops.map(s=>[s.lat,s.lng]);
+L.polyline(line,{color:'#2E6C70',weight:2.5,opacity:.65,dashArray:'2 7',lineCap:'round'}).addTo(map);
+
+TRIP.stops.forEach((s,i)=>{
+  const icon=L.divIcon({className:'',html:`<div class="pin" data-i="${i}"><span>${i+1}</span></div>`,iconSize:[30,30],iconAnchor:[15,28],popupAnchor:[0,-26]});
+  const m=L.marker([s.lat,s.lng],{icon}).addTo(map).bindPopup(`<b>${s.name}</b><br>${s.when} \u00b7 ${s.nights} night${s.nights>1?'s':''}`);
+  m.on('click',()=>setActive(i,false)); markers.push(m);
+
+  const li=document.createElement('div'); li.className='stop'; li.dataset.i=i;
+  li.innerHTML=`<div class="num">${i+1}</div><div class="meta"><h4>${s.name}</h4><div class="when">${s.when} \u00b7 ${s.nights} night${s.nights>1?'s':''}</div><p>${s.blurb}</p></div>`;
+  li.addEventListener('click',()=>setActive(i,true)); stoplist.appendChild(li);
+
+  const jc=TRIP.journal.filter(e=>e.stop===s.name).length;
+  const fromroad=jc?`<a class="fromroad" href="#journal">\ud83d\udcf7 ${jc} from the road \u2192</a>`:'';
+  const card=document.createElement('article'); card.className='day-card';
+  card.innerHTML=`<div class="idx">Stop ${String(i+1).padStart(2,'0')}</div><h3>${s.name}</h3><div class="when">${s.when}</div><span class="nights">${s.nights} night${s.nights>1?'s':''}</span><p class="blurb">${s.blurb}</p><div class="tags">${s.tags.map(tagHTML).join('')}</div>${fromroad}`;
+  daysGrid.appendChild(card);
+});
+map.fitBounds(L.latLngBounds(line).pad(0.12));
+
+function setActive(i,fly){
+  if(activeIdx>-1){document.querySelector(`.stop[data-i="${activeIdx}"]`)?.classList.remove('active');document.querySelector(`.pin[data-i="${activeIdx}"]`)?.classList.remove('is-active');}
+  activeIdx=i;
+  const li=document.querySelector(`.stop[data-i="${i}"]`); li?.classList.add('active');
+  document.querySelector(`.pin[data-i="${i}"]`)?.classList.add('is-active');
+  markers[i].openPopup();
+  if(fly){map.flyTo([TRIP.stops[i].lat,TRIP.stops[i].lng],8,{duration:.8});li?.scrollIntoView({behavior:'smooth',block:'nearest'});}
+}
+
+/* ============= journal feed + lightbox ============= */
+const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const fmtDate=d=>{const[y,m,da]=d.split('-').map(Number);return `${MON[m-1]} ${da}, ${y}`};
+const feed=document.getElementById('journal-feed');
+const SORTED=[...TRIP.journal].sort((a,b)=>b.date.localeCompare(a.date));
+if(!SORTED.length){
+  feed.innerHTML=`<p class="empty-feed">The journal\u2019s empty for now \u2014 the first entry drops when we land in Madrid.</p>`;
+}else SORTED.forEach((e,ei)=>{
+  const gal=(e.photos&&e.photos.length)?`<div class="gallery">${e.photos.map((p,pi)=>`<img src="${p.src}" alt="${p.caption||''}" loading="lazy" data-e="${ei}" data-p="${pi}">`).join('')}</div>`:'';
+  const block=document.createElement('article'); block.className='entry';
+  block.innerHTML=`<div class="entry-head"><span class="entry-date">${fmtDate(e.date)}</span>${e.stop?`<span class="entry-stop">${e.stop}</span>`:''}</div>${e.title?`<h3>${e.title}</h3>`:''}${e.body?`<p>${e.body}</p>`:''}${gal}`;
+  feed.appendChild(block);
+});
+
+let lbE=-1, lbP=0;
+const lb=document.getElementById('lb'), lbImg=document.getElementById('lb-img'), lbCap=document.getElementById('lb-cap');
+feed.addEventListener('click',ev=>{const t=ev.target;if(t.tagName==='IMG'&&t.dataset.e!=null)openLB(+t.dataset.e,+t.dataset.p);});
+function openLB(e,p){lbE=e;lbP=p;renderLB();lb.classList.add('open');}
+function renderLB(){const x=SORTED[lbE].photos[lbP];lbImg.src=x.src;lbCap.textContent=x.caption||'';}
+function closeLB(){lb.classList.remove('open');}
+function stepLB(d){const a=SORTED[lbE].photos;lbP=(lbP+d+a.length)%a.length;renderLB();}
+lb.addEventListener('click',ev=>{if(ev.target===lb)closeLB();});
+document.addEventListener('keydown',ev=>{if(!lb.classList.contains('open'))return;if(ev.key==='Escape')closeLB();if(ev.key==='ArrowRight')stepLB(1);if(ev.key==='ArrowLeft')stepLB(-1);});
+</script>
+</body>
+</html>
