@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Iberia & the Pyrenees · Sept 2026</title>
+<title>Mackechaka — Spain, France & Andorra</title>
 <meta name="description" content="John & Ira — a Spain, France & Andorra road trip, September 2026. Follow along." />
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -134,7 +134,7 @@ footer p{color:var(--ink-soft);font-size:14px;margin-top:8px}
 
 <nav class="nav">
   <div class="wrap">
-    <div class="brand"><span class="dot"></span> Iberia&nbsp;&rsquo;26</div>
+    <div class="brand"><span class="dot"></span> Mackechaka</div>
     <div class="nav-links">
       <a href="#map-section">The Route</a>
       <a href="#days">Day by Day</a>
@@ -150,11 +150,10 @@ footer p{color:var(--ink-soft);font-size:14px;margin-top:8px}
     <p class="eyebrow reveal" style="animation-delay:.05s">John &amp; Ira &middot; Road Trip</p>
     <h1 class="reveal" style="animation-delay:.15s">Spain, France<br>&amp; <em>Andorra</em></h1>
     <p class="sub reveal" style="animation-delay:.3s">A loop from Madrid up to the Basque surf coast, across to Bordeaux, over the Pyrenees through Andorra, and down the Costa Brava into Barcelona for La Merc&egrave;. Follow along &mdash; we&rsquo;ll be posting notes and photos as we go.</p>
-    <div class="dates reveal" style="animation-delay:.42s"><span class="pill">Sept 4 &ndash; 28, 2026</span></div>
+    <div class="dates reveal" style="animation-delay:.42s"><span class="pill">September 2026</span></div>
     <div class="stats reveal" style="animation-delay:.55s">
       <div class="stat"><div class="n">3</div><div class="l">Countries</div></div>
       <div class="stat"><div class="n">9</div><div class="l">Stops</div></div>
-      <div class="stat"><div class="n">23</div><div class="l">Nights</div></div>
       <div class="stat"><div class="n">~1,900<span style="font-size:18px">km</span></div><div class="l">On the road</div></div>
     </div>
   </div>
@@ -242,35 +241,35 @@ const ph=(c,l)=>"data:image/svg+xml,"+encodeURIComponent(
   `<svg xmlns='http://www.w3.org/2000/svg' width='600' height='450'><rect width='100%' height='100%' fill='${c}'/><text x='50%' y='50%' fill='rgba(255,255,255,.9)' font-family='sans-serif' font-size='26' text-anchor='middle' dominant-baseline='middle'>${l}</text></svg>`);
 
 const TRIP = {
-  googleMapId: "1s0lICV5BKCW1hmJbmxqga0HwYeYj9Ig",
+  googleMapId: "1Bpc9AFp_1yp-rprNMLPBt7xdtHyBB84",
   stops: [
-    { name:"Madrid", when:"Sep 5\u20137", nights:3, lat:40.4168, lng:-3.7038,
-      blurb:"Easing in. The Prado, Plaza Mayor, Retiro, Sunday vermouth in La Latina. Optional day trip to Toledo or Segovia.",
-      tags:["Prado","Tapas","Day trip"] },
-    { name:"Bilbao", when:"Sep 8\u20139", nights:2, lat:43.2630, lng:-2.9350,
-      blurb:"Guggenheim and the best pintxos in the Casco Viejo. We break the drive up at Burgos for its Gothic cathedral.",
-      tags:["Guggenheim","Pintxos"] },
-    { name:"San Sebasti\u00e1n", when:"Sep 10\u201312", nights:3, lat:43.3183, lng:-1.9812,
-      blurb:"The \u2018could we live here?\u2019 stop. Surf at Zurriola, La Concha bay, pintxos crawls through the Parte Vieja.",
-      tags:["surf:Zurriola","La Concha","Pintxos"] },
-    { name:"Biarritz", when:"Sep 13\u201315", nights:3, lat:43.4832, lng:-1.5586,
-      blurb:"French-Basque surf town. C\u00f4te des Basques for mellow days, Hossegor for the heavy stuff, Anglet to scout.",
-      tags:["surf:C\u00f4te des Basques","Hossegor"] },
-    { name:"Bordeaux", when:"Sep 16\u201318", nights:3, lat:44.8378, lng:-0.5792,
-      blurb:"The Dune du Pilat and Cap Ferret oysters on the way up. Then Place de la Bourse, the old town, a St-\u00c9milion tasting.",
-      tags:["Dune du Pilat","Wine","St-\u00c9milion"] },
-    { name:"Toulouse", when:"Sep 19", nights:1, lat:43.6045, lng:1.4440,
-      blurb:"One night in the pink-brick city \u2014 dinner and a wander along the Garonne before the mountains.",
-      tags:["Drive-break"] },
-    { name:"Andorra", when:"Sep 20\u201322", nights:3, lat:42.5063, lng:1.5218,
-      blurb:"Into the Pyrenees over Port d\u2019Envalira. XC trails, the Tristaina lakes, Coll de la Gallina drives, the Madriu valley walk.",
-      tags:["MTB / XC","Hiking","Mountain drives"] },
-    { name:"Girona", when:"Sep 23\u201324", nights:2, lat:41.9833, lng:2.8247,
-      blurb:"Medieval old town as a base for the Costa Brava: Cadaqu\u00e9s, Cap de Creus and Dal\u00ed\u2019s house north; coves and the corniche south.",
-      tags:["Costa Brava","Dal\u00ed","Coves"] },
-    { name:"Barcelona", when:"Sep 25\u201327", nights:3, lat:41.3874, lng:2.1686,
-      blurb:"Gaud\u00ed by day and the finale of La Merc\u00e8 by night \u2014 the correfoc fire run, the gegants parade, the Piromusical.",
-      tags:["Gaud\u00ed","fest:La Merc\u00e8","fest:Correfoc"] },
+    { name:"Madrid", lat:40.4168, lng:-3.7038,
+      blurb:"Spain\u2019s high, sunlit capital \u2014 grand boulevards, world-class museums, and late dinners that spill out into the plazas.",
+      tags:["Capital","Museums","Tapas"] },
+    { name:"Bilbao", lat:43.2630, lng:-2.9350,
+      blurb:"A Basque port city reborn around the Guggenheim, with a tangle of old-town streets known for their pintxos bars.",
+      tags:["Guggenheim","Old town","Pintxos"] },
+    { name:"San Sebasti\u00e1n", lat:43.3183, lng:-1.9812,
+      blurb:"An elegant crescent bay on the Basque coast, ringed by surf beaches and celebrated for some of the best food in Spain.",
+      tags:["Beaches","surf:Surf","Pintxos"] },
+    { name:"Biarritz", lat:43.4832, lng:-1.5586,
+      blurb:"A faded-glamour resort on the French-Basque coast, and a cradle of European surfing.",
+      tags:["surf:Surf","Coast","Basque"] },
+    { name:"Bordeaux", lat:44.8378, lng:-0.5792,
+      blurb:"Grand 18th-century stonework along a sweeping riverfront, and the gateway to some of the world\u2019s great vineyards.",
+      tags:["Riverfront","Wine country"] },
+    { name:"Toulouse", lat:43.6045, lng:1.4440,
+      blurb:"The \u2018pink city\u2019 on the Garonne \u2014 rosy brick, broad squares, and an easy southern-French pace.",
+      tags:["Pink brick","Garonne"] },
+    { name:"Andorra", lat:42.5063, lng:1.5218,
+      blurb:"A tiny country tucked high in the Pyrenees \u2014 alpine passes, mountain lakes, and ridgeline trails.",
+      tags:["Pyrenees","Hiking","MTB"] },
+    { name:"Girona", lat:41.9833, lng:2.8247,
+      blurb:"A walled medieval city on the Onyar, threaded with stone lanes and steps, at the doorstep of the Costa Brava.",
+      tags:["Medieval","Costa Brava"] },
+    { name:"Barcelona", lat:41.3874, lng:2.1686,
+      blurb:"Gaud\u00ed\u2019s restless architecture, Mediterranean light, and the street-festival energy of La Merc\u00e8.",
+      tags:["Gaud\u00ed","Mediterranean","fest:La Merc\u00e8"] },
   ],
   journal: [
     // \u2193 SAMPLE ENTRY \u2014 delete me and add your own
@@ -302,17 +301,17 @@ L.polyline(line,{color:'#2E6C70',weight:2.5,opacity:.65,dashArray:'2 7',lineCap:
 
 TRIP.stops.forEach((s,i)=>{
   const icon=L.divIcon({className:'',html:`<div class="pin" data-i="${i}"><span>${i+1}</span></div>`,iconSize:[30,30],iconAnchor:[15,28],popupAnchor:[0,-26]});
-  const m=L.marker([s.lat,s.lng],{icon}).addTo(map).bindPopup(`<b>${s.name}</b><br>${s.when} \u00b7 ${s.nights} night${s.nights>1?'s':''}`);
+  const m=L.marker([s.lat,s.lng],{icon}).addTo(map).bindPopup(`<b>${s.name}</b>`);
   m.on('click',()=>setActive(i,false)); markers.push(m);
 
   const li=document.createElement('div'); li.className='stop'; li.dataset.i=i;
-  li.innerHTML=`<div class="num">${i+1}</div><div class="meta"><h4>${s.name}</h4><div class="when">${s.when} \u00b7 ${s.nights} night${s.nights>1?'s':''}</div><p>${s.blurb}</p></div>`;
+  li.innerHTML=`<div class="num">${i+1}</div><div class="meta"><h4>${s.name}</h4><p>${s.blurb}</p></div>`;
   li.addEventListener('click',()=>setActive(i,true)); stoplist.appendChild(li);
 
   const jc=TRIP.journal.filter(e=>e.stop===s.name).length;
   const fromroad=jc?`<a class="fromroad" href="#journal">\ud83d\udcf7 ${jc} from the road \u2192</a>`:'';
   const card=document.createElement('article'); card.className='day-card';
-  card.innerHTML=`<div class="idx">Stop ${String(i+1).padStart(2,'0')}</div><h3>${s.name}</h3><div class="when">${s.when}</div><span class="nights">${s.nights} night${s.nights>1?'s':''}</span><p class="blurb">${s.blurb}</p><div class="tags">${s.tags.map(tagHTML).join('')}</div>${fromroad}`;
+  card.innerHTML=`<div class="idx">Stop ${String(i+1).padStart(2,'0')}</div><h3>${s.name}</h3><p class="blurb">${s.blurb}</p><div class="tags">${s.tags.map(tagHTML).join('')}</div>${fromroad}`;
   daysGrid.appendChild(card);
 });
 map.fitBounds(L.latLngBounds(line).pad(0.12));
