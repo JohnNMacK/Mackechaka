@@ -198,7 +198,7 @@ footer p{color:var(--ink-soft);font-size:14px;margin-top:8px}
     <div class="sec-head">
       <p class="eyebrow">Stop by Stop</p>
       <h2>The stops</h2>
-      <p>The route, in order. What we actually get up to lands in the journal below.</p>
+      <p>The stops, in order. What we get up to goes in the journal below.</p>
     </div>
     <div class="days" id="days-grid"></div>
   </div>
@@ -220,7 +220,7 @@ footer p{color:var(--ink-soft);font-size:14px;margin-top:8px}
     <div class="sec-head">
       <p class="eyebrow">From Friends</p>
       <h2>Been there? Tell us where to go</h2>
-      <p>Drop us a recommendation &mdash; a bar, a beach, a dish, a detour. It lands on the wall for everyone to see.</p>
+      <p>Got a favorite bar, restaurant, something we shouldn&rsquo;t miss? Let us know here!</p>
     </div>
     <div class="tip-grid">
       <div class="tip-form">
@@ -248,7 +248,6 @@ footer p{color:var(--ink-soft);font-size:14px;margin-top:8px}
     <div class="embed-frame">
       <iframe id="gmap" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
     </div>
-    <p class="note">For friends to see this map: open it in Google &rarr; <b>Share</b> &rarr; <b>&ldquo;Anyone with the link.&rdquo;</b> The map ID lives in <code>TRIP.googleMapId</code>.</p>
   </div>
 </section>
 
@@ -360,7 +359,7 @@ feed.innerHTML=`<p class="empty-feed">Loading the journal…</p>`;
 })();
 function renderFeed(){
   if(!SORTED.length){
-    feed.innerHTML=`<p class="empty-feed">The journal’s empty for now — the first entry drops when we land in Madrid.</p>`;
+    feed.innerHTML=`<p class="empty-feed">Nothing here yet — check back once we’re in Madrid.</p>`;
     return;
   }
   feed.innerHTML='';
