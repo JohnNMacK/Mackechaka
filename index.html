@@ -99,6 +99,7 @@ section{padding:74px 0}
 .entry-head{display:flex;align-items:center;gap:12px;margin-bottom:8px}
 .entry-date{font-family:"DM Serif Display",serif;font-size:16px;color:var(--clay)}
 .entry-stop{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--sea);border:1px solid var(--sea);border-radius:999px;padding:2px 9px}
+.entry-by{font-size:13px;color:var(--ink-soft);font-weight:600}
 .entry h3{font-size:27px;margin:2px 0 8px}
 .entry p{color:var(--ink-soft);max-width:680px}
 .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:18px}
@@ -322,7 +323,7 @@ function renderFeed(){
   SORTED.forEach((e,ei)=>{
     const gal=(e.photos&&e.photos.length)?`<div class="gallery">${e.photos.map((p,pi)=>`<img src="${esc(p.src)}" alt="${esc(p.caption)}" loading="lazy" data-e="${ei}" data-p="${pi}">`).join('')}</div>`:'';
     const block=document.createElement('article'); block.className='entry';
-    block.innerHTML=`<div class="entry-head"><span class="entry-date">${fmtDate(e.date)}</span>${e.stop?`<span class="entry-stop">${esc(e.stop)}</span>`:''}</div>${e.title?`<h3>${esc(e.title)}</h3>`:''}${e.body?`<p>${esc(e.body)}</p>`:''}${gal}`;
+    block.innerHTML=`<div class="entry-head"><span class="entry-date">${fmtDate(e.date)}</span>${e.stop?`<span class="entry-stop">${esc(e.stop)}</span>`:''}${e.author?`<span class="entry-by">&middot; ${esc(e.author)}</span>`:''}</div>${e.title?`<h3>${esc(e.title)}</h3>`:''}${e.body?`<p>${esc(e.body)}</p>`:''}${gal}`;
     feed.appendChild(block);
   });
   document.querySelectorAll('.day-card').forEach((card,i)=>{
