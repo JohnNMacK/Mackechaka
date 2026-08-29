@@ -160,7 +160,7 @@ const firebaseConfig = {
   messagingSenderId: "257387909198",
   appId: "1:257387909198:web:2ccf708f607e5c21f5331f"
 };
-const POST_TEAM = "John & Ira";
+const AUTHORS = ["John", "Ira"];
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -178,18 +178,24 @@ onAuthStateChanged(auth, user => {
   $("app").classList.toggle("hidden", !user);
   if (user) {
     ME = (user.displayName || "").split(" ")[0] || (user.email || "").split("@")[0] || "Us";
-    setAuthorOptions(ME);
+    setAuthorOptions();
     if (!$("f-date").value) $("f-date").value = today();
   }
 });
 function setAuthorOptions(selected){
   const sel = $("f-author");
-  const opts = [ME, POST_TEAM];
-  if (selected && !opts.includes(selected)) opts.unshift(selected);
+  const remembered = localStorage.getItem("mk_author");
+  const pick = selected
+    || (AUTHORS.includes(remembered) ? remembered : (AUTHORS.includes(ME) ? ME : "John"));
+  const opts = [...AUTHORS];
+  if (pick && !opts.includes(pick)) opts.unshift(pick);
   sel.innerHTML = "";
   opts.forEach(o => { const el = document.createElement("option"); el.textContent = o; sel.appendChild(el); });
-  sel.value = selected || ME;
+  sel.value = pick;
 }
+document.getElementById("f-author").addEventListener("change", e => {
+  if (AUTHORS.includes(e.target.value)) localStorage.setItem("mk_author", e.target.value);
+});
 $("pass-go").addEventListener("click", async () => {
   const err = $("pass-err");
   err.classList.add("hidden");
@@ -306,7 +312,7 @@ function resetForm(){
   files = []; editId = null; drawThumbs();
   $("f-title").value = ""; $("f-body").value = ""; $("f-stop").value = "";
   $("f-date").value = today();
-  setAuthorOptions(ME);
+  setAuthorOptions();
   $("status").className = "msg hidden";
   $("save-btn").textContent = "Post it";
   $("cancel-btn").style.display = "none";
@@ -354,7 +360,7 @@ function startEdit(p){
   $("f-stop").value = p.stop || "";
   $("f-title").value = p.title || "";
   $("f-body").value = p.body || "";
-  setAuthorOptions(p.author || ME);
+  setAuthorOptions(p.author);
   files = (p.photos || []).map(ph => ({ kind: "old", src: ph.src, caption: ph.caption || "" }));
   drawThumbs();
   $("save-btn").textContent = "Save changes";
