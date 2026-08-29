@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mackechaka — Post from the road</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --paper:#F5EFE3; --paper-2:#EFE7D6; --card:#FBF7EE;
+  --ink:#221D16; --ink-soft:#5A5040;
+  --clay:#BE5A36; --clay-deep:#9C4526; --sea:#2E6C70;
+  --line:rgba(34,29,22,.14); --shadow:0 18px 40px -24px rgba(34,29,22,.55);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:"Hanken Grotesk",sans-serif;font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;padding:28px 18px 60px}
+.card{max-width:460px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:26px 22px}
+.brand{display:flex;align-items:center;gap:10px;font-family:"DM Serif Display",serif;font-size:20px;margin-bottom:4px}
+.brand .dot{width:11px;height:11px;border-radius:50%;background:var(--clay);box-shadow:0 0 0 4px rgba(190,90,54,.18)}
+h1{font-family:"DM Serif Display",serif;font-weight:400;font-size:32px;line-height:1.1;margin:10px 0 4px}
+.sub{color:var(--ink-soft);font-size:14.5px;margin-bottom:22px}
+label{display:block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--clay);margin:18px 0 6px}
+input[type=text],input[type=date],input[type=password],textarea,select{
+  width:100%;background:#fff;border:1px solid var(--line);border-radius:11px;padding:12px 13px;
+  font:inherit;color:var(--ink);outline:none;transition:border-color .15s, box-shadow .15s;-webkit-appearance:none;appearance:none}
+input:focus,textarea:focus,select:focus{border-color:var(--clay);box-shadow:0 0 0 3px rgba(190,90,54,.15)}
+textarea{min-height:120px;resize:vertical}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235A5040' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.btn{display:block;width:100%;margin-top:24px;background:var(--clay);color:#fff;border:0;border-radius:999px;
+  padding:15px 20px;font:inherit;font-weight:700;font-size:17px;cursor:pointer;transition:background .15s,transform .1s}
+.btn:hover{background:var(--clay-deep)}
+.btn:active{transform:scale(.99)}
+.btn[disabled]{opacity:.55;cursor:default}
+.btn.ghost{background:transparent;color:var(--clay);border:1.5px solid var(--clay)}
+.photo-add{margin-top:2px;display:flex;align-items:center;justify-content:center;gap:8px;border:1.5px dashed var(--clay);
+  border-radius:12px;padding:16px;color:var(--clay);font-weight:600;cursor:pointer;background:rgba(190,90,54,.05)}
+.thumbs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.thumb{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.thumb img{width:100%;height:110px;object-fit:cover;display:block}
+.thumb input{border:0;border-top:1px solid var(--line);border-radius:0;padding:8px 10px;font-size:13px}
+.thumb .rm{display:block;width:100%;border:0;background:none;color:var(--ink-soft);font-size:12px;padding:6px;cursor:pointer}
+.msg{margin-top:14px;font-size:14.5px;color:var(--ink-soft)}
+.msg.err{color:var(--clay-deep);font-weight:600}
+.done{text-align:center;padding:30px 6px}
+.done .big{font-family:"DM Serif Display",serif;font-size:38px;color:var(--sea)}
+.done p{color:var(--ink-soft);margin:10px 0 24px}
+.hidden{display:none}
+.foot{max-width:460px;margin:26px auto 0;text-align:center;color:var(--ink-soft);font-size:13px}
+.foot .serif{font-family:"DM Serif Display",serif;font-size:20px;color:var(--sea)}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="brand"><span class="dot"></span> Mackechaka</div>
+
+  <!-- PIN gate -->
+  <div id="gate">
+    <h1>Post from the road</h1>
+    <p class="sub">Enter the trip PIN to open the journal form.</p>
+    <label for="pin">PIN</label>
+    <input id="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="••••" />
+    <button class="btn" id="pin-go">Continue</button>
+    <p class="msg err hidden" id="pin-err"></p>
+  </div>
+
+  <!-- form -->
+  <div id="form" class="hidden">
+    <h1>New entry</h1>
+    <p class="sub">A few lines and a photo or two is plenty. It goes live on the site the moment you post.</p>
+
+    <label for="f-date">Date</label>
+    <input id="f-date" type="date" />
+
+    <label for="f-stop">Stop</label>
+    <select id="f-stop">
+      <option value="">Somewhere on the road</option>
+      <option>Madrid</option>
+      <option>Bilbao</option>
+      <option>San Sebastián</option>
+      <option>Biarritz</option>
+      <option>Bordeaux</option>
+      <option>Toulouse</option>
+      <option>Andorra</option>
+      <option>Begur</option>
+      <option>Barcelona</option>
+    </select>
+
+    <label for="f-title">Title <span style="text-transform:none;letter-spacing:0;color:var(--ink-soft);font-weight:500">(optional)</span></label>
+    <input id="f-title" type="text" maxlength="180" placeholder="Landed. Football tonight." />
+
+    <label for="f-body">What happened <span style="text-transform:none;letter-spacing:0;color:var(--ink-soft);font-weight:500">(optional)</span></label>
+    <textarea id="f-body" maxlength="4500" placeholder="Write it like a postcard…"></textarea>
+
+    <label>Photos</label>
+    <div class="photo-add" id="photo-add">＋ Add photos</div>
+    <input id="f-photos" type="file" accept="image/*" multiple class="hidden" />
+    <div class="thumbs" id="thumbs"></div>
+
+    <button class="btn" id="post-btn">Post it</button>
+    <p class="msg hidden" id="status"></p>
+  </div>
+
+  <!-- success -->
+  <div id="done" class="done hidden">
+    <div class="big">Posted.</div>
+    <p>It&rsquo;s live on the site.</p>
+    <button class="btn" id="again">Write another</button>
+    <a href="https://mackechaka.com#journal" style="display:block;margin-top:12px;color:var(--clay);font-weight:600">See it on the site &rarr;</a>
+  </div>
+</div>
+
+<p class="foot"><span class="serif">Buen viaje.</span><br>John &amp; Ira &middot; Spain &middot; France &middot; Andorra</p>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDt29kHiHXJ3irrIOwsTKDcB_M41ticEI0",
+  authDomain: "mackechaka.firebaseapp.com",
+  projectId: "mackechaka",
+  storageBucket: "mackechaka.firebasestorage.app",
+  messagingSenderId: "257387909198",
+  appId: "1:257387909198:web:2ccf708f607e5c21f5331f"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+const $ = id => document.getElementById(id);
+let PIN = localStorage.getItem("mk_pin") || "";
+let files = []; // {blob, url, caption}
+
+// ---- gate ----
+function openForm(){
+  $("gate").classList.add("hidden");
+  $("form").classList.remove("hidden");
+  $("f-date").value = new Date().toLocaleDateString("en-CA");
+}
+if (PIN) openForm();
+$("pin-go").addEventListener("click", () => {
+  const v = $("pin").value.trim();
+  if (!v) return;
+  PIN = v; localStorage.setItem("mk_pin", v); openForm();
+});
+
+// ---- photos ----
+$("photo-add").addEventListener("click", () => $("f-photos").click());
+$("f-photos").addEventListener("change", async e => {
+  for (const f of e.target.files) {
+    try {
+      const blob = await shrink(f);
+      files.push({ blob, url: URL.createObjectURL(blob), caption: "" });
+    } catch (_) { /* skip unreadable file */ }
+  }
+  e.target.value = "";
+  drawThumbs();
+});
+function drawThumbs(){
+  const t = $("thumbs"); t.innerHTML = "";
+  files.forEach((f, i) => {
+    const d = document.createElement("div"); d.className = "thumb";
+    d.innerHTML = `<img src="${f.url}" alt=""><input type="text" placeholder="Caption (optional)" maxlength="140"><button class="rm" type="button">remove</button>`;
+    d.querySelector("input").value = f.caption;
+    d.querySelector("input").addEventListener("input", ev => files[i].caption = ev.target.value);
+    d.querySelector(".rm").addEventListener("click", () => { files.splice(i, 1); drawThumbs(); });
+    t.appendChild(d);
+  });
+}
+function shrink(file){
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 1600;
+      const sc = Math.min(1, MAX / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(b => b ? res(b) : rej(new Error("encode failed")), "image/jpeg", 0.82);
+      URL.revokeObjectURL(img.src);
+    };
+    img.onerror = () => rej(new Error("decode failed"));
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+// ---- post ----
+$("post-btn").addEventListener("click", async () => {
+  const btn = $("post-btn"), st = $("status");
+  const title = $("f-title").value.trim();
+  const body = $("f-body").value.trim();
+  if (!title && !body && !files.length) {
+    st.textContent = "Give it at least a line or a photo."; st.className = "msg err"; return;
+  }
+  btn.disabled = true; st.className = "msg";
+  try {
+    const photos = [];
+    for (let i = 0; i < files.length; i++) {
+      st.textContent = `Uploading photo ${i + 1} of ${files.length}…`;
+      const path = `journal/${Date.now()}-${i}.jpg`;
+      const r = ref(storage, path);
+      await uploadBytes(r, files[i].blob, { contentType: "image/jpeg", customMetadata: { pin: PIN } });
+      photos.push({ src: await getDownloadURL(r), caption: files[i].caption.trim() });
+    }
+    st.textContent = "Posting…";
+    await addDoc(collection(db, "journal"), {
+      date: $("f-date").value || new Date().toLocaleDateString("en-CA"),
+      stop: $("f-stop").value,
+      title, body, photos,
+      pin: PIN,
+      createdAt: serverTimestamp()
+    });
+    $("form").classList.add("hidden");
+    $("done").classList.remove("hidden");
+    window.scrollTo(0, 0);
+  } catch (err) {
+    const denied = String(err && (err.code || err.message)).includes("permission") || String(err.code).includes("unauth");
+    if (denied) {
+      localStorage.removeItem("mk_pin"); PIN = "";
+      st.textContent = "That PIN didn’t work — reload the page and try again.";
+    } else {
+      st.textContent = "Something hiccuped — check your signal and try again. Nothing was posted twice.";
+    }
+    st.className = "msg err";
+  }
+  btn.disabled = false;
+});
+
+// ---- again ----
+$("again").addEventListener("click", () => {
+  files = []; drawThumbs();
+  $("f-title").value = ""; $("f-body").value = ""; $("status").className = "msg hidden";
+  $("f-date").value = new Date().toLocaleDateString("en-CA");
+  $("done").classList.add("hidden");
+  $("form").classList.remove("hidden");
+});
+</script>
+</body>
+</html>
