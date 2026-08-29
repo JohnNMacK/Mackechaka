@@ -25,6 +25,7 @@ h1{font-family:"DM Serif Display",serif;font-weight:400;font-size:32px;line-heig
 .tabs{display:flex;gap:8px;margin:6px 0 4px}
 .tab{flex:1;text-align:center;border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:9px 8px;font:inherit;font-weight:700;font-size:14px;color:var(--ink-soft);cursor:pointer}
 .tab.on{border-color:var(--clay);color:var(--clay);background:rgba(190,90,54,.07)}
+.tab .badge{display:inline-block;margin-left:6px;background:var(--clay);color:#fff;border-radius:999px;font-size:11px;line-height:1;padding:3px 7px;font-weight:700;vertical-align:1px}
 label{display:block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--clay);margin:18px 0 6px}
 label .opt{text-transform:none;letter-spacing:0;color:var(--ink-soft);font-weight:500}
 input[type=text],input[type=date],input[type=password],textarea,select{
@@ -86,6 +87,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="tabs">
       <button class="tab on" id="tab-new">Write</button>
       <button class="tab" id="tab-list">Past posts</button>
+      <button class="tab" id="tab-tips">Tips<span id="tips-badge" class="badge hidden"></span></button>
     </div>
 
     <!-- write / edit -->
@@ -130,6 +132,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div id="list" class="hidden">
       <p class="msg" id="list-status">Loading…</p>
       <div id="posts"></div>
+    </div>
+
+    <!-- tips moderation -->
+    <div id="tipspane" class="hidden">
+      <p class="msg" id="tips-status">Loading…</p>
+      <div id="tipslist"></div>
     </div>
 
     <!-- success -->
@@ -180,6 +188,7 @@ onAuthStateChanged(auth, user => {
     ME = (user.displayName || "").split(" ")[0] || (user.email || "").split("@")[0] || "Us";
     setAuthorOptions();
     if (!$("f-date").value) $("f-date").value = today();
+    refreshBadge();
   }
 });
 function setAuthorOptions(selected){
@@ -215,13 +224,16 @@ $("signout").addEventListener("click", () => signOut(auth));
 // ---- tabs ----
 $("tab-new").addEventListener("click", () => { resetForm(); showPane("form"); });
 $("tab-list").addEventListener("click", () => { showPane("list"); loadPosts(); });
+$("tab-tips").addEventListener("click", () => { showPane("tips"); loadTips(); });
 function showPane(which){
   $("form").classList.toggle("hidden", which !== "form");
   $("list").classList.toggle("hidden", which !== "list");
+  $("tipspane").classList.toggle("hidden", which !== "tips");
   $("done").classList.add("hidden");
   $("tab-new").classList.toggle("on", which === "form");
   $("tab-list").classList.toggle("on", which === "list");
-  $("head").textContent = which === "list" ? "Past posts" : (editId ? "Edit entry" : "New entry");
+  $("tab-tips").classList.toggle("on", which === "tips");
+  $("head").textContent = which === "tips" ? "Friend tips" : which === "list" ? "Past posts" : (editId ? "Edit entry" : "New entry");
 }
 function today(){ return new Date().toLocaleDateString("en-CA"); }
 
@@ -382,6 +394,64 @@ async function removePost(p, btn){
     btn.disabled = false; btn.textContent = "Delete";
     alert("Couldn’t delete — check your signal and the Firestore rules.");
   }
+}
+
+// ---- friend tips moderation ----
+function setBadge(n){
+  const b = $("tips-badge");
+  b.textContent = n;
+  b.classList.toggle("hidden", !n);
+}
+async function refreshBadge(){
+  try {
+    const snap = await getDocs(collection(db, "tips"));
+    setBadge(snap.docs.filter(d => d.data().approved !== true).length);
+  } catch (_) {}
+}
+async function loadTips(){
+  const box = $("tipslist"), st = $("tips-status");
+  st.textContent = "Loading…"; box.innerHTML = "";
+  try {
+    const snap = await getDocs(collection(db, "tips"));
+    const tips = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a,b) => (Number(a.approved===true) - Number(b.approved===true)) || ((b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)));
+    const pending = tips.filter(t => t.approved !== true).length;
+    setBadge(pending);
+    st.textContent = tips.length ? (pending ? `${pending} waiting for approval` : "All caught up — everything below is live.") : "Nothing submitted yet.";
+    tips.forEach(t => box.appendChild(tipCard(t)));
+  } catch (e) {
+    st.textContent = "Couldn’t load tips — check your signal.";
+  }
+}
+function tipCard(t){
+  const d = document.createElement("div"); d.className = "post";
+  const head = document.createElement("div"); head.className = "ph";
+  const pd = document.createElement("span"); pd.className = "pd"; pd.textContent = t.name || "—";
+  head.appendChild(pd);
+  if (t.stop) { const ps = document.createElement("span"); ps.className = "ps"; ps.textContent = t.stop; head.appendChild(ps); }
+  const flag = document.createElement("span"); flag.className = "pm"; flag.textContent = t.approved === true ? "· live on the wall" : "· waiting";
+  head.appendChild(flag);
+  d.appendChild(head);
+  const b = document.createElement("p"); b.textContent = t.tip || ""; d.appendChild(b);
+  const acts = document.createElement("div"); acts.className = "acts";
+  if (t.approved !== true) {
+    const ab = document.createElement("button"); ab.className = "edit"; ab.textContent = "Approve";
+    ab.addEventListener("click", async () => {
+      ab.disabled = true; ab.textContent = "Approving…";
+      try { await updateDoc(doc(db, "tips", t.id), { approved: true }); loadTips(); }
+      catch (e) { ab.disabled = false; ab.textContent = "Approve"; alert("Couldn’t approve — check your signal."); }
+    });
+    acts.appendChild(ab);
+  }
+  const db_ = document.createElement("button"); db_.className = "del"; db_.textContent = "Delete";
+  db_.addEventListener("click", async () => {
+    if (!confirm(`Remove ${t.name || "this"}’s tip?`)) return;
+    db_.disabled = true; db_.textContent = "Deleting…";
+    try { await deleteDoc(doc(db, "tips", t.id)); loadTips(); }
+    catch (e) { db_.disabled = false; db_.textContent = "Delete"; alert("Couldn’t delete — check your signal."); }
+  });
+  acts.appendChild(db_); d.appendChild(acts);
+  return d;
 }
 </script>
 </body>

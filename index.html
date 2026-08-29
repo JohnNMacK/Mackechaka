@@ -107,6 +107,24 @@ section{padding:74px 0}
 .gallery img:hover{transform:scale(1.02);box-shadow:var(--shadow)}
 .empty-feed{color:var(--ink-soft);font-style:italic}
 
+/* tips wall */
+.tip-grid{display:grid;grid-template-columns:1fr 1.45fr;gap:26px;align-items:start}
+@media(max-width:900px){.tip-grid{grid-template-columns:1fr}}
+.tip-form{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px}
+.tip-form label{display:block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--clay);margin:14px 0 6px}
+.tip-form label:first-of-type{margin-top:0}
+.tip-form input,.tip-form select,.tip-form textarea{width:100%;background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 12px;font:inherit;color:var(--ink);outline:none;-webkit-appearance:none;appearance:none;transition:border-color .15s,box-shadow .15s}
+.tip-form input:focus,.tip-form select:focus,.tip-form textarea:focus{border-color:var(--clay);box-shadow:0 0 0 3px rgba(190,90,54,.15)}
+.tip-form textarea{min-height:96px;resize:vertical}
+.tip-form button{display:block;width:100%;margin-top:18px;background:var(--clay);color:#fff;border:0;border-radius:999px;padding:13px 18px;font:inherit;font-weight:700;font-size:16px;cursor:pointer;transition:background .15s}
+.tip-form button:hover{background:var(--clay-deep)}
+.tip-form button[disabled]{opacity:.55;cursor:default}
+.tip-msg{margin-top:12px;font-size:14px;color:var(--ink-soft)}
+.tip{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:16px 18px;margin-bottom:12px}
+.tip .th{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.tip .tn{font-family:"DM Serif Display",serif;font-size:17px;color:var(--clay)}
+.tip p{color:var(--ink-soft);font-size:15px}
+
 /* lightbox */
 .lb{position:fixed;inset:0;z-index:2000;background:rgba(20,16,12,.93);display:none;align-items:center;justify-content:center;padding:5vh 4vw;animation:fade .25s}
 .lb.open{display:flex}
@@ -140,6 +158,7 @@ footer p{color:var(--ink-soft);font-size:14px;margin-top:8px}
       <a href="#map-section">The Route</a>
       <a href="#days">The Stops</a>
       <a href="#journal">Journal</a>
+      <a href="#tips">Tips</a>
       <a href="#eats">Bars &amp; Eats</a>
     </div>
   </div>
@@ -193,6 +212,29 @@ footer p{color:var(--ink-soft);font-size:14px;margin-top:8px}
       <p>Notes and photos as the trip unfolds &mdash; newest first.</p>
     </div>
     <div class="journal-feed" id="journal-feed"></div>
+  </div>
+</section>
+
+<section id="tips">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">From Friends</p>
+      <h2>Been there? Tell us where to go</h2>
+      <p>Drop us a recommendation &mdash; a bar, a beach, a dish, a detour. It lands on the wall for everyone to see.</p>
+    </div>
+    <div class="tip-grid">
+      <div class="tip-form">
+        <label for="tip-name">Your name</label>
+        <input id="tip-name" type="text" maxlength="50" placeholder="Who's this from?" />
+        <label for="tip-stop">Where</label>
+        <select id="tip-stop"></select>
+        <label for="tip-text">The tip</label>
+        <textarea id="tip-text" maxlength="1100" placeholder="You have to go to&hellip;"></textarea>
+        <button id="tip-send" type="button">Put it on the wall</button>
+        <p class="tip-msg" id="tip-msg"></p>
+      </div>
+      <div id="tip-wall"><p class="empty-feed">Loading the wall&hellip;</p></div>
+    </div>
   </div>
 </section>
 
@@ -304,14 +346,16 @@ feed.innerHTML=`<p class="empty-feed">Loading the journal…</p>`;
 (async()=>{
   try{
     const {initializeApp}=await import('https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js');
-    const {getFirestore,collection,getDocs}=await import('https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js');
+    const {getFirestore,collection,getDocs,addDoc,serverTimestamp}=await import('https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js');
     const db=getFirestore(initializeApp(firebaseConfig));
     const snap=await getDocs(collection(db,'journal'));
     SORTED=snap.docs.map(d=>d.data())
       .sort((a,b)=>(b.date||'').localeCompare(a.date||'')||((b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)));
     renderFeed();
+    initTips(db,{collection,getDocs,addDoc,serverTimestamp});
   }catch(err){
     feed.innerHTML=`<p class="empty-feed">Couldn’t load the journal right now — try a refresh.</p>`;
+    document.getElementById('tip-wall').innerHTML=`<p class="empty-feed">Couldn’t load the wall right now.</p>`;
   }
 })();
 function renderFeed(){
@@ -333,6 +377,42 @@ function renderFeed(){
       a.innerHTML=`\ud83d\udcf7 ${jc} from the road \u2192`;
       card.appendChild(a);
     }
+  });
+}
+
+/* ============= tips wall ============= */
+function initTips(db,F){
+  const wall=document.getElementById('tip-wall');
+  const stopSel=document.getElementById('tip-stop');
+  stopSel.innerHTML='<option value="">Anywhere on the route</option>'+TRIP.stops.map(s=>`<option>${esc(s.name)}</option>`).join('');
+  async function loadWall(){
+    try{
+      const snap=await F.getDocs(F.collection(db,'tips'));
+      const tips=snap.docs.map(d=>d.data()).filter(t=>t.approved===true).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+      if(!tips.length){wall.innerHTML='<p class="empty-feed">Nothing on the wall yet — be the first.</p>';return;}
+      wall.innerHTML='';
+      tips.forEach(t=>{
+        const d=document.createElement('div');d.className='tip';
+        d.innerHTML=`<div class="th"><span class="tn">${esc(t.name)}</span>${t.stop?`<span class="entry-stop">${esc(t.stop)}</span>`:''}</div><p>${esc(t.tip)}</p>`;
+        wall.appendChild(d);
+      });
+    }catch(e){wall.innerHTML='<p class="empty-feed">Couldn’t load the wall right now.</p>';}
+  }
+  loadWall();
+  document.getElementById('tip-send').addEventListener('click',async()=>{
+    const name=document.getElementById('tip-name').value.trim();
+    const tip=document.getElementById('tip-text').value.trim();
+    const msg=document.getElementById('tip-msg');
+    const btn=document.getElementById('tip-send');
+    if(!name||!tip){msg.textContent='Add your name and a tip.';msg.style.color='var(--clay-deep)';return;}
+    btn.disabled=true;msg.style.color='var(--ink-soft)';msg.textContent='Sending…';
+    try{
+      await F.addDoc(F.collection(db,'tips'),{name,stop:stopSel.value,tip,approved:false,createdAt:F.serverTimestamp()});
+      document.getElementById('tip-text').value='';
+      msg.textContent='Gracias — we’ll put it on the wall when we’re off the road!';
+      loadWall();
+    }catch(e){msg.textContent='Couldn’t send — try again in a minute.';msg.style.color='var(--clay-deep)';}
+    btn.disabled=false;
   });
 }
 
