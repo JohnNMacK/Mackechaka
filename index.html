@@ -62,7 +62,7 @@ section{padding:74px 0}
 #map{height:560px;border-radius:var(--r);box-shadow:var(--shadow);border:1px solid var(--line);z-index:1}
 @media(max-width:900px){#map{height:420px}}
 .stoplist{display:flex;flex-direction:column;gap:10px;max-height:560px;overflow:auto;padding-right:6px}
-@media(max-width:900px){.stoplist{max-height:none}}
+@media(max-width:900px){.stoplist{flex-direction:row;max-height:none;overflow-x:auto;padding:4px 2px 10px;scroll-snap-type:x mandatory}.stop{flex:0 0 230px;scroll-snap-align:start}.stop:hover,.stop.active{transform:none}}
 .stop{display:flex;gap:14px;align-items:flex-start;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px 16px;transition:transform .18s,border-color .18s,box-shadow .18s}
 .stop:hover{transform:translateX(3px);border-color:var(--clay)}
 .stop.active{border-color:var(--clay);box-shadow:0 0 0 2px rgba(190,90,54,.25);transform:translateX(3px)}
@@ -73,18 +73,20 @@ section{padding:74px 0}
 .pin{display:grid;place-items:center;width:30px;height:30px;border-radius:50% 50% 50% 2px;background:var(--clay);color:#fff;font-family:"DM Serif Display",serif;font-size:14px;transform:rotate(45deg);box-shadow:0 6px 14px -4px rgba(0,0,0,.5);border:2px solid var(--paper)}
 .pin span{transform:rotate(-45deg)}
 .pin.is-active{background:var(--sea);transform:rotate(45deg) scale(1.18)}
+.stop.past{opacity:.55}
+.stop.past:hover,.stop.past.active{opacity:1}
+.stop.here{border-color:var(--sea);box-shadow:0 0 0 2px rgba(46,108,112,.25)}
+.stop.here .num{background:var(--sea)}
+.here-tag{display:inline-block;margin-left:6px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:var(--sea);border-radius:999px;padding:2px 8px;vertical-align:2px}
+.stop .meta .fromroad{margin-top:6px;font-size:12.5px}
+.pin.past{opacity:.5}
+.pin.here{background:var(--sea);animation:pulse 1.8s ease-out infinite}
+@keyframes pulse{0%{box-shadow:0 6px 14px -4px rgba(0,0,0,.5),0 0 0 0 rgba(46,108,112,.55)}100%{box-shadow:0 6px 14px -4px rgba(0,0,0,.5),0 0 0 16px rgba(46,108,112,0)}}
+.now{margin-top:10px;font-family:"DM Serif Display",serif;font-size:20px;color:var(--sea)}
 .leaflet-popup-content-wrapper{border-radius:12px;font-family:"Hanken Grotesk"}
 .leaflet-popup-content{margin:12px 14px}
 .leaflet-popup-content b{font-family:"DM Serif Display",serif;font-weight:400;font-size:17px}
 
-.days{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
-.day-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:24px;position:relative;transition:transform .2s,box-shadow .2s}
-.day-card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
-.day-card .idx{font-family:"DM Serif Display",serif;font-size:13px;color:var(--clay);letter-spacing:.04em}
-.day-card h3{font-size:27px;margin:6px 0 2px}
-.day-card .when{font-size:13px;font-weight:600;color:var(--ink-soft);letter-spacing:.03em}
-.day-card .nights{display:inline-block;margin-top:10px;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--sea);border:1px solid var(--sea);border-radius:999px;padding:3px 10px}
-.day-card .blurb{margin-top:14px;font-size:15px;color:var(--ink-soft)}
 .tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
 .tag{font-size:12px;background:var(--paper-2);border:1px solid var(--line);border-radius:7px;padding:4px 9px;color:var(--ink-soft)}
 .tag.surf{color:var(--sea);border-color:rgba(46,108,112,.4)}
@@ -156,7 +158,6 @@ footer p{color:var(--ink-soft);font-size:14px;margin-top:8px}
     <div class="brand"><span class="dot"></span> Mackechaka</div>
     <div class="nav-links">
       <a href="#map-section">The Route</a>
-      <a href="#days">The Stops</a>
       <a href="#journal">Journal</a>
       <a href="#tips">Tips</a>
       <a href="#eats">Bars &amp; Eats</a>
@@ -184,7 +185,8 @@ footer p{color:var(--ink-soft);font-size:14px;margin-top:8px}
     <div class="sec-head">
       <p class="eyebrow">The Route</p>
       <h2>One big counter-clockwise loop</h2>
-      <p>Tap a stop to fly there. The line is roughly the order we&rsquo;ll drive it.</p>
+      <p>Tap a stop to fly there. Solid line is where we&rsquo;ve been, dashed is what&rsquo;s next.</p>
+      <p class="now" id="now"></p>
     </div>
     <div class="map-layout">
       <div id="map"></div>
@@ -193,16 +195,6 @@ footer p{color:var(--ink-soft);font-size:14px;margin-top:8px}
   </div>
 </section>
 
-<section id="days">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow">Stop by Stop</p>
-      <h2>The stops</h2>
-      <p>The stops, in order. What we get up to goes in the journal below.</p>
-    </div>
-    <div class="days" id="days-grid"></div>
-  </div>
-</section>
 
 <section id="journal">
   <div class="wrap">
@@ -278,45 +270,62 @@ footer p{color:var(--ink-soft);font-size:14px;margin-top:8px}
 const TRIP = {
   googleMapId: "1Bpc9AFp_1yp-rprNMLPBt7xdtHyBB84",
   stops: [
-    { name:"Madrid", lat:40.4168, lng:-3.7038 },
-    { name:"Bilbao", lat:43.2630, lng:-2.9350 },
-    { name:"San Sebasti\u00e1n", lat:43.3183, lng:-1.9812 },
-    { name:"Biarritz", lat:43.4832, lng:-1.5586 },
-    { name:"Bordeaux", lat:44.8378, lng:-0.5792 },
-    { name:"Toulouse", lat:43.6045, lng:1.4440 },
-    { name:"Andorra", lat:42.5063, lng:1.5218 },
-    { name:"Costa Brava", lat:41.9536, lng:3.2077 },
-    { name:"Barcelona", lat:41.3874, lng:2.1686 },
+    { name:"Madrid", lat:40.4168, lng:-3.7038, dates:"Sept 5–8", from:"2026-09-05", to:"2026-09-08" },
+    { name:"Bilbao", lat:43.2630, lng:-2.9350, dates:"Sept 8–9", from:"2026-09-08", to:"2026-09-09" },
+    { name:"San Sebasti\u00e1n", lat:43.3183, lng:-1.9812, dates:"Sept 9–12", from:"2026-09-09", to:"2026-09-12" },
+    { name:"Biarritz", lat:43.4832, lng:-1.5586, dates:"Sept 12–14", from:"2026-09-12", to:"2026-09-14" },
+    { name:"Bordeaux", lat:44.8378, lng:-0.5792, dates:"Sept 14–16", from:"2026-09-14", to:"2026-09-16" },
+    { name:"Toulouse", lat:43.6045, lng:1.4440, dates:"Sept 16–18", from:"2026-09-16", to:"2026-09-18" },
+    { name:"Andorra", lat:42.5063, lng:1.5218, dates:"Sept 18–21", from:"2026-09-18", to:"2026-09-21" },
+    { name:"Costa Brava", lat:41.9536, lng:3.2077, dates:"Sept 21–25", from:"2026-09-21", to:"2026-09-25" },
+    { name:"Barcelona", lat:41.3874, lng:2.1686, dates:"Sept 25–28", from:"2026-09-25", to:"2026-09-28" },
   ]
 };
 
 /* ============= render (no need to edit) ============= */
 const stoplist=document.getElementById('stoplist');
-const daysGrid=document.getElementById('days-grid');
 const markers=[]; let map, activeIdx=-1;
 
 document.getElementById('gmap').src="https://www.google.com/maps/d/embed?mid="+TRIP.googleMapId;
 
+// where are we today?
+const TODAY=new Date().toLocaleDateString('en-CA');
+let hereIdx=-1;
+TRIP.stops.forEach((s,i)=>{ if(s.from&&s.from<=TODAY) hereIdx=i; });
+const LAST=TRIP.stops[TRIP.stops.length-1];
+const HOME=!!(LAST.to&&TODAY>LAST.to);
+const nowEl=document.getElementById('now');
+if(HOME) nowEl.textContent='Home. That was the trip.';
+else if(hereIdx<0){
+  const d=Math.round((new Date(TRIP.stops[0].from)-new Date(TODAY))/864e5);
+  nowEl.textContent=d<=0?'Landing in Madrid.':(d===1?'Madrid tomorrow.':`Madrid in ${d} days.`);
+}else nowEl.textContent=`Right now: ${TRIP.stops[hereIdx].name}.`;
+
 map=L.map('map',{scrollWheelZoom:false}).setView([43,1],6);
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri &mdash; &copy; OpenStreetMap contributors',maxZoom:16}).addTo(map);
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',{maxZoom:16}).addTo(map);
-const line=TRIP.stops.map(s=>[s.lat,s.lng]);
-L.polyline(line,{color:'#2E6C70',weight:2.5,opacity:.65,dashArray:'2 7',lineCap:'round'}).addTo(map);
+const pts=TRIP.stops.map(s=>[s.lat,s.lng]);
+const doneUpTo=HOME?pts.length-1:hereIdx;
+if(doneUpTo>0) L.polyline(pts.slice(0,doneUpTo+1),{color:'#2E6C70',weight:3,opacity:.85,lineCap:'round'}).addTo(map);
+if(doneUpTo<pts.length-1) L.polyline(pts.slice(Math.max(doneUpTo,0)),{color:'#2E6C70',weight:2.5,opacity:.6,dashArray:'2 7',lineCap:'round'}).addTo(map);
+
+function popupHTML(s,jc){
+  return `<b>${s.name}</b>${s.dates?`<br><span style="font-size:13px;color:#5A5040">${s.dates}</span>`:''}${jc?`<br><a href="#journal" style="font-size:13px;font-weight:600;color:#BE5A36;text-decoration:none">\ud83d\udcf7 ${jc} from the road \u2192</a>`:''}`;
+}
 
 TRIP.stops.forEach((s,i)=>{
-  const icon=L.divIcon({className:'',html:`<div class="pin" data-i="${i}"><span>${i+1}</span></div>`,iconSize:[30,30],iconAnchor:[15,28],popupAnchor:[0,-26]});
-  const m=L.marker([s.lat,s.lng],{icon}).addTo(map).bindPopup(`<b>${s.name}</b>`);
+  const state=HOME?'':(i<hereIdx?'past':(i===hereIdx?'here':''));
+  const icon=L.divIcon({className:'',html:`<div class="pin ${state}" data-i="${i}"><span>${i+1}</span></div>`,iconSize:[30,30],iconAnchor:[15,28],popupAnchor:[0,-26]});
+  const m=L.marker([s.lat,s.lng],{icon}).addTo(map).bindPopup(popupHTML(s,0));
   m.on('click',()=>setActive(i,false)); markers.push(m);
 
-  const li=document.createElement('div'); li.className='stop'; li.dataset.i=i;
-  li.innerHTML=`<div class="num">${i+1}</div><div class="meta"><h4>${s.name}</h4></div>`;
+  const li=document.createElement('div'); li.className='stop'+(state?' '+state:''); li.dataset.i=i;
+  li.innerHTML=`<div class="num">${i+1}</div><div class="meta"><h4>${s.name}${state==='here'?' <span class="here-tag">we\u2019re here</span>':''}</h4>${s.dates?`<div class="when">${s.dates}</div>`:''}</div>`;
   li.addEventListener('click',()=>setActive(i,true)); stoplist.appendChild(li);
-
-  const card=document.createElement('article'); card.className='day-card';
-  card.innerHTML=`<div class="idx">Stop ${String(i+1).padStart(2,'0')}</div><h3>${s.name}</h3>`;
-  daysGrid.appendChild(card);
 });
-map.fitBounds(L.latLngBounds(line).pad(0.12));
+map.fitBounds(L.latLngBounds(pts).pad(0.12));
+const hereEl=stoplist.querySelector('.stop.here');
+if(hereEl){stoplist.scrollTop=hereEl.offsetTop-stoplist.offsetTop;stoplist.scrollLeft=hereEl.offsetLeft-stoplist.offsetLeft;}
 
 function setActive(i,fly){
   if(activeIdx>-1){document.querySelector(`.stop[data-i="${activeIdx}"]`)?.classList.remove('active');document.querySelector(`.pin[data-i="${activeIdx}"]`)?.classList.remove('is-active');}
@@ -324,7 +333,7 @@ function setActive(i,fly){
   const li=document.querySelector(`.stop[data-i="${i}"]`); li?.classList.add('active');
   document.querySelector(`.pin[data-i="${i}"]`)?.classList.add('is-active');
   markers[i].openPopup();
-  if(fly){map.flyTo([TRIP.stops[i].lat,TRIP.stops[i].lng],8,{duration:.8});li?.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  if(fly){map.flyTo([TRIP.stops[i].lat,TRIP.stops[i].lng],8,{duration:.8});li?.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});}
 }
 
 /* ============= journal: live from Firebase ============= */
@@ -369,13 +378,12 @@ function renderFeed(){
     block.innerHTML=`<div class="entry-head"><span class="entry-date">${fmtDate(e.date)}</span>${e.stop?`<span class="entry-stop">${esc(e.stop)}</span>`:''}${e.author?`<span class="entry-by">&middot; ${esc(e.author)}</span>`:''}</div>${e.title?`<h3>${esc(e.title)}</h3>`:''}${e.body?`<p>${esc(e.body)}</p>`:''}${gal}`;
     feed.appendChild(block);
   });
-  document.querySelectorAll('.day-card').forEach((card,i)=>{
-    const jc=SORTED.filter(e=>e.stop===TRIP.stops[i].name).length;
-    if(jc){
-      const a=document.createElement('a'); a.className='fromroad'; a.href='#journal';
-      a.innerHTML=`\ud83d\udcf7 ${jc} from the road \u2192`;
-      card.appendChild(a);
-    }
+  TRIP.stops.forEach((s,i)=>{
+    const jc=SORTED.filter(e=>e.stop===s.name).length;
+    const meta=document.querySelector(`.stop[data-i="${i}"] .meta`);
+    meta?.querySelector('.fromroad')?.remove();
+    if(jc){const a=document.createElement('a');a.className='fromroad';a.href='#journal';a.innerHTML=`\ud83d\udcf7 ${jc} from the road \u2192`;meta?.appendChild(a);}
+    markers[i].setPopupContent(popupHTML(s,jc));
   });
 }
 
